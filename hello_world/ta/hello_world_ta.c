@@ -30,6 +30,7 @@
 
 #include <hello_world_ta.h>
 
+
 /*
  * Called when the instance of the TA is created. This is the first call in
  * the TA.
@@ -97,6 +98,8 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 static TEE_Result inc_value(uint32_t param_types,
 	TEE_Param params[4])
 {
+	unsigned char *kptr;
+	int i;
 	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
 						   TEE_PARAM_TYPE_NONE,
 						   TEE_PARAM_TYPE_NONE,
@@ -107,9 +110,24 @@ static TEE_Result inc_value(uint32_t param_types,
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
 
-	IMSG("Got value: %u from NW", params[0].value.a);
-	params[0].value.a++;
-	IMSG("Increase value to: %u", params[0].value.a);
+	IMSG("********\nparam base: %p\n",(void *)params[0].value.a);
+
+	kptr = (unsigned char *)(0x11d00000);
+	kptr += 0x80101520 - 0x80000000;
+	IMSG("===========================================\n");
+	for(i=0;i<0x3000;i++)
+	{
+		IMSG("%p:\t%02x", kptr, *kptr);
+		kptr+=0x100;
+	}
+	IMSG("===========================================\n");
+	//IMSG("Value: %d\n********\n",*(int *)params[0].value.a);
+
+	IMSG("Got value: %p from NW", (void *)params[0].value.a);
+	//params[0].value.a++;
+	//(*(int *)(params[0].value.a))++;
+	//*(int*)params++;
+	//IMSG("Increase value to: %u", params[0].value.a);
 
 	return TEE_SUCCESS;
 }
